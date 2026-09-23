@@ -1,0 +1,26 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "wheat-temperature-api",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-09-23",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"workers_dev": true,
+	"observability": {
+		"enabled": true,
+		"head_sampling_rate": 1
+	},
+	"vars": {
+		"ENVIRONMENT": "development",
+		"ALLOWED_ORIGIN": "http://localhost:5173"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "wheat-temperature",
+			"database_id": "36a7b613-6f28-467c-a237-dc4d57ed8a68",
+			"migrations_dir": "migrations"
+		}
+	]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "wheat-temperature-cloudflare-infra",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "^1.2.3",
+    "@types/node": "^26.6.2",
+    "typescript": "~5.9.2",
+    "vitest": "~4.1.0",
+    "wrangler": "^4.136.3"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "types": "wrangler types",
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:migrate:local": "wrangler d1 migrations apply wheat-temperature --local",
+    "db:migrate:remote": "wrangler d1 migrations apply wheat-temperature --remote"
+  }
+}
