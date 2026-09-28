@@ -13,7 +13,7 @@
 	},
 	"vars": {
 		"ENVIRONMENT": "development",
-		"ALLOWED_ORIGIN": "http://localhost:5173"
+		"ALLOWED_ORIGIN": "https://charliecooke221.github.io,http://localhost:5173"
 	},
 	"d1_databases": [
 		{

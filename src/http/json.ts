@@ -2,13 +2,16 @@ import { HttpError } from "./errors";
 
 export const MAX_BODY_BYTES = 16 * 1024;
 
-export function jsonResponse(status: number, body: unknown): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      "content-type": "application/json; charset=utf-8",
-    },
-  });
+export function jsonResponse(status: number, body: unknown, extra?: HeadersInit): Response {
+  const headers = new Headers(extra);
+  headers.set("content-type", "application/json; charset=utf-8");
+  return new Response(JSON.stringify(body), { status, headers });
+}
+
+export function publicCacheHeaders(maxAgeSeconds: number): HeadersInit {
+  return {
+    "cache-control": `public, max-age=${maxAgeSeconds}, stale-while-revalidate=${maxAgeSeconds * 2}`,
+  };
 }
 
 export function jsonError(status: number, code: string, message: string): Response {

@@ -1,9 +1,6 @@
 # wheat-temperature-cloudflare-infra
 
-Cloudflare Worker + D1 API for the wheat-temperature hub. Phase C1 covers
-ingestion: the hub POSTs a sample, the Worker authenticates it, and D1 stores
-one row per probe. Duplicate `sampleId` uploads return success without inserting
-again.
+Cloudflare Worker + D1 API for the wheat-temperature hub.
 
 This matches the firmware upload in
 `firmware/wheat-temperature-monitoring-hub`.
@@ -23,8 +20,28 @@ Current routes:
 | Method | Path | Auth |
 | ------ | ---- | ---- |
 | `GET` | `/api/v1/health` | none |
+| `GET` | `/api/v1/summary` | none |
+| `GET` | `/api/v1/readings` | none |
 | `POST` | `/api/v1/samples` | hub bearer token |
 | `OPTIONS` | any of the above | CORS preflight |
+
+`GET /summary` is the home-page payload: public probe layout, latest **scheduled**
+reading per probe, 24-hour grain min/max, air as its own card, last sample time,
+and a stale flag (no scheduled sample in 120 minutes). It never returns alert
+settings or recipients.
+
+`GET /readings` query parameters:
+
+| Param | Default | Notes |
+| ----- | ------- | ----- |
+| `group` | `day` | `raw`, `hour`, `day`, `week`, `month` |
+| `start` / `end` | lookback for that group | ISO date or UTC timestamp |
+| `probes` | all | comma-separated probe IDs |
+| `includeManual` | `false` | set `true` to include button samples |
+
+Grain-wide `avgC` / `maxC` on each point exclude the air probe. Responses send
+`Cache-Control` so browsers can reuse them for 30 seconds (5 minutes if the
+requested `end` is already more than an hour in the past).
 
 ## One-time local setup
 

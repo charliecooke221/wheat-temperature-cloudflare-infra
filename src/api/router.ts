@@ -2,7 +2,9 @@ import { HttpError } from "../http/errors";
 import { corsPreflight, withCors } from "../http/cors";
 import { jsonError, jsonFromHttpError } from "../http/json";
 import { handleHealth } from "./health";
+import { handleReadings } from "./readings";
 import { handlePostSample } from "./samples";
+import { handleSummary } from "./summary";
 
 export async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (request.method === "OPTIONS") {
@@ -15,6 +17,10 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
     let response: Response;
     if (request.method === "GET" && url.pathname === "/api/v1/health") {
       response = await handleHealth(env);
+    } else if (request.method === "GET" && url.pathname === "/api/v1/summary") {
+      response = await handleSummary(env);
+    } else if (request.method === "GET" && url.pathname === "/api/v1/readings") {
+      response = await handleReadings(request, env);
     } else if (request.method === "POST" && url.pathname === "/api/v1/samples") {
       response = await handlePostSample(request, env);
     } else {

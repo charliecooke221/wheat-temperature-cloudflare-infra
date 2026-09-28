@@ -4,8 +4,8 @@ const ALLOWED_HEADERS = "Content-Type, Authorization";
 function allowedOrigin(request: Request, env: Env): string | null {
   const origin = request.headers.get("Origin");
   if (!origin) return null;
-  if (origin === env.ALLOWED_ORIGIN) return origin;
-  return null;
+  const allowed = env.ALLOWED_ORIGIN.split(",").map((item) => item.trim());
+  return allowed.includes(origin) ? origin : null;
 }
 
 function corsHeaders(origin: string): HeadersInit {
