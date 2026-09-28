@@ -58,22 +58,20 @@ export async function loadSummary(db: D1Database): Promise<SummaryResult> {
   const layout = await loadPublicLayout(db);
 
   // Latest reading per probe from any source, so a manual button press shows up straight away.
-  const latestRows = await db
-    .prepare(
-      `SELECT probe_id, temperature_c, raw_temperature_c, status, sampled_at,
-              received_at, sample_id, source, time_quality
-       FROM (
-         SELECT probe_id, temperature_c, raw_temperature_c, status, sampled_at,
-                received_at, sample_id, source, time_quality,
-                ROW_NUMBER() OVER (
-                  PARTITION BY probe_id
-                  ORDER BY ${READING_TIME_SQL} DESC, received_at DESC
-                ) AS rn
-         FROM readings
-       )
-       WHERE rn = 1`,
-    )
-    .all<LatestRow>();
+  // One LIMIT 1 lookup per probe walks idx_readings_probe_time and reads a single row; a
+  // window function over the whole table would read every reading on each request.
+  const latestStatement = db.prepare(
+    `SELECT probe_id, temperature_c, raw_temperature_c, status, sampled_at,
+            received_at, sample_id, source, time_quality
+     FROM readings
+     WHERE probe_id = ?
+     ORDER BY ${READING_TIME_SQL} DESC, received_at DESC
+     LIMIT 1`,
+  );
+  const latestResults = layout.probes.length
+    ? await db.batch<LatestRow>(layout.probes.map((item) => latestStatement.bind(item.probeId)))
+    : [];
+  const latestRows = latestResults.flatMap((result) => result.results);
 
   // Staleness tracks the hourly schedule only; a manual reading must not hide a stalled hub schedule.
   const scheduledRow = await db
@@ -93,7 +91,7 @@ export async function loadSummary(db: D1Database): Promise<SummaryResult> {
     )
     .all<RangeRow>();
 
-  const latestByProbe = new Map(latestRows.results.map((row) => [row.probe_id, row]));
+  const latestByProbe = new Map(latestRows.map((row) => [row.probe_id, row]));
   const rangeByProbe = new Map(rangeRows.results.map((row) => [row.probe_id, row]));
 
   const probes: SummaryProbe[] = layout.probes.map((item) => {

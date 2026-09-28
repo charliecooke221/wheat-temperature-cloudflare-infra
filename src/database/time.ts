@@ -1,3 +1,4 @@
+// Must match the indexed expression in migrations/0002_reading_time_indexes.sql, or queries fall back to full scans.
 export const READING_TIME_SQL = "datetime(COALESCE(sampled_at, received_at))";
 
 export function groupExpr(group: "hour" | "day" | "week" | "month"): string {
