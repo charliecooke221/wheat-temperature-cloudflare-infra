@@ -34,6 +34,13 @@ export interface SummaryResult {
   layout: { probes: ProbeLayoutItem[] };
   probes: SummaryProbe[];
   air: SummaryProbe | null;
+  /** Hub power as reported with the newest sample; null before any sample. */
+  hubPower: HubPower | null;
+}
+
+export interface HubPower {
+  batteryV: number | null;
+  externalPower: boolean;
 }
 
 interface LatestRow {
@@ -46,6 +53,8 @@ interface LatestRow {
   sample_id: string;
   source: string;
   time_quality: string;
+  battery_v: number | null;
+  external_power: number;
 }
 
 interface RangeRow {
@@ -62,7 +71,7 @@ export async function loadSummary(db: D1Database): Promise<SummaryResult> {
   // window function over the whole table would read every reading on each request.
   const latestStatement = db.prepare(
     `SELECT probe_id, temperature_c, raw_temperature_c, status, sampled_at,
-            received_at, sample_id, source, time_quality
+            received_at, sample_id, source, time_quality, battery_v, external_power
      FROM readings
      WHERE probe_id = ?
      ORDER BY ${READING_TIME_SQL} DESC, received_at DESC
@@ -121,9 +130,13 @@ export async function loadSummary(db: D1Database): Promise<SummaryResult> {
   });
 
   let lastSampleAt: string | null = null;
-  for (const probe of probes) {
-    const stamp = probe.latest?.sampledAt ?? probe.latest?.receivedAt ?? null;
-    if (stamp && (!lastSampleAt || stamp > lastSampleAt)) lastSampleAt = stamp;
+  let newestRow: LatestRow | null = null;
+  for (const row of latestRows) {
+    const stamp = row.sampled_at ?? row.received_at;
+    if (!lastSampleAt || stamp > lastSampleAt) {
+      lastSampleAt = stamp;
+      newestRow = row;
+    }
   }
   const stale =
     lastScheduledAt === null ||
@@ -138,5 +151,8 @@ export async function loadSummary(db: D1Database): Promise<SummaryResult> {
     layout: { probes: layout.probes },
     probes,
     air: probes.find((probe) => probe.kind === "air") ?? null,
+    hubPower: newestRow
+      ? { batteryV: newestRow.battery_v, externalPower: newestRow.external_power === 1 }
+      : null,
   };
 }

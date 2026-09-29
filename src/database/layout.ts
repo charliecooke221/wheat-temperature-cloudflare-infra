@@ -18,17 +18,10 @@ interface SettingsRow {
   probe_layout: string;
 }
 
-export async function loadPublicLayout(db: D1Database): Promise<PublicLayout> {
-  const row = await db
-    .prepare("SELECT timezone, probe_layout FROM settings WHERE id = 1")
-    .first<SettingsRow>();
-  if (!row) {
-    throw new HttpError(500, "misconfigured", "Site settings are missing");
-  }
-
+export function parseProbeLayout(json: string): ProbeLayoutItem[] {
   let parsed: unknown;
   try {
-    parsed = JSON.parse(row.probe_layout);
+    parsed = JSON.parse(json);
   } catch {
     throw new HttpError(500, "misconfigured", "Probe layout is not valid JSON");
   }
@@ -52,6 +45,15 @@ export async function loadPublicLayout(db: D1Database): Promise<PublicLayout> {
     if (typeof record.col === "number") item.col = record.col;
     items.push(item);
   }
+  return items;
+}
 
-  return { timezone: row.timezone, probes: items };
+export async function loadPublicLayout(db: D1Database): Promise<PublicLayout> {
+  const row = await db
+    .prepare("SELECT timezone, probe_layout FROM settings WHERE id = 1")
+    .first<SettingsRow>();
+  if (!row) {
+    throw new HttpError(500, "misconfigured", "Site settings are missing");
+  }
+  return { timezone: row.timezone, probes: parseProbeLayout(row.probe_layout) };
 }

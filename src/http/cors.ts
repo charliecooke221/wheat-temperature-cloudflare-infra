@@ -1,4 +1,4 @@
-const ALLOWED_METHODS = "GET, POST, PUT, OPTIONS";
+const ALLOWED_METHODS = "GET, POST, PUT, DELETE, OPTIONS";
 const ALLOWED_HEADERS = "Content-Type, Authorization";
 
 function allowedOrigin(request: Request, env: Env): string | null {

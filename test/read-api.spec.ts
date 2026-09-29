@@ -62,6 +62,8 @@ async function seedLatest() {
           source: "manual",
           sampledAt: isoHoursAgo(0.5),
           uploadSequence: 3,
+          batteryV: 3.97,
+          externalPower: false,
           readings: [
             { channel: 1, probeId: "grain-01", romId: null, rawTemperatureC: 40, temperatureC: 40, status: "ok" },
             { channel: 2, probeId: "grain-02", romId: null, rawTemperatureC: 40, temperatureC: 40, status: "ok" },
@@ -95,6 +97,7 @@ describe("GET /api/v1/summary", () => {
         max24hC: number | null;
       }>;
       air: { latest: { temperatureC: number } | null; min24hC: number | null };
+      hubPower: { batteryV: number | null; externalPower: boolean } | null;
     };
 
     expect(body.ok).toBe(true);
@@ -120,6 +123,7 @@ describe("GET /api/v1/summary", () => {
     expect(air?.max24hC).toBe(12);
     expect(body.air?.latest?.temperatureC).toBe(40);
     expect(body.air?.min24hC).toBe(10);
+    expect(body.hubPower).toEqual({ batteryV: 3.97, externalPower: false });
   });
 
   it("marks the summary stale when the last scheduled sample is old", async () => {

@@ -1,3 +1,19 @@
 # Copy to .dev.vars (gitignored) for local `wrangler dev`.
-# Production uses `npx wrangler secret put HUB_UPLOAD_TOKEN` instead.
+# Production uses `npx wrangler secret put <NAME>` for each of these instead.
 HUB_UPLOAD_TOKEN=replace-with-a-long-random-hub-upload-token
+
+# Admin login. Generate all three with:
+#   node scripts/admin-secrets.mjs "your admin password"
+ADMIN_PASSWORD_SALT=
+ADMIN_PASSWORD_HASH=
+ADMIN_TOKEN_KEY=
+
+# Brevo transactional email. The sender must be verified in Brevo.
+# Leave blank locally to skip email (test alerts then report it is not configured).
+BREVO_API_KEY=
+ALERT_SENDER_EMAIL=
+
+# Web Push. Generate the pair with: node scripts/vapid-keys.mjs
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+VAPID_SUBJECT=mailto:you@example.com

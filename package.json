@@ -18,5 +18,8 @@
     "test:watch": "vitest",
     "db:migrate:local": "wrangler d1 migrations apply wheat-temperature --local",
     "db:migrate:remote": "wrangler d1 migrations apply wheat-temperature --remote"
+  },
+  "dependencies": {
+    "@block65/webcrypto-web-push": "^2.0.0"
   }
 }

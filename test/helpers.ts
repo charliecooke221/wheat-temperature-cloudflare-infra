@@ -50,3 +50,25 @@ export function hubHeaders(token = HUB_TOKEN): HeadersInit {
     authorization: `Bearer ${token}`,
   };
 }
+
+// Must match TEST_ADMIN_PASSWORD in vitest.config.ts.
+export const ADMIN_PASSWORD = "correct horse battery staple";
+
+export function adminHeaders(token: string): HeadersInit {
+  return {
+    "content-type": "application/json",
+    authorization: `Bearer ${token}`,
+  };
+}
+
+/** A realistic browser push subscription with a fresh P-256 key. */
+export async function fakePushSubscription(endpoint = "https://fcm.googleapis.com/fcm/send/abc123") {
+  const pair = (await crypto.subtle.generateKey({ name: "ECDH", namedCurve: "P-256" }, true, [
+    "deriveBits",
+  ])) as CryptoKeyPair;
+  const raw = new Uint8Array((await crypto.subtle.exportKey("raw", pair.publicKey)) as ArrayBuffer);
+  const auth = crypto.getRandomValues(new Uint8Array(16));
+  const b64url = (bytes: Uint8Array) =>
+    btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return { endpoint, expirationTime: null, keys: { p256dh: b64url(raw), auth: b64url(auth) } };
+}

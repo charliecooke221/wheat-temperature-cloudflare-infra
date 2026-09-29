@@ -13,7 +13,14 @@
 	},
 	"vars": {
 		"ENVIRONMENT": "development",
-		"ALLOWED_ORIGIN": "https://charliecooke221.github.io,http://localhost:5173"
+		"ALLOWED_ORIGIN": "https://charliecooke221.github.io,http://localhost:5173",
+		"DASHBOARD_URL": "https://charliecooke221.github.io/wheat-temperature-frontend/",
+		"ALERT_SENDER_NAME": "Wheat Temperature",
+		"LOGIN_FAILURE_DELAY_MS": "750"
+	},
+	// Retries a failed alert email and clears old login-limit rows.
+	"triggers": {
+		"crons": ["*/15 * * * *"]
 	},
 	"d1_databases": [
 		{
